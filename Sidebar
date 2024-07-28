@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    #container {
+      display: flex;
+      height: 80vh;
+    }
+    .doc-panel {
+      flex: 1;
+      margin: 10px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      overflow-y: auto;
+      height: calc(100vh - 80px);
+    }
+    #documentList {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <h3>Document Manager</h3>
+  <div id="documentList">
+    <select id="documentSelector" onchange="loadDocumentContent()"></select>
+  </div>
+  <div id="container">
+    <div class="doc-panel" id="docContent" contenteditable="true" oninput="editDocument()"></div>
+  </div>
+
+  <script>
+    let currentDocId;
+
+    function loadDocuments() {
+      google.script.run.withSuccessHandler(function(docs) {
+        const docSelector = document.getElementById('documentSelector');
+        docSelector.innerHTML = '';
+        docs.forEach(function(doc) {
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.text = doc.title;
+          docSelector.add(option);
+        });
+      }).getDocumentTitles();
+    }
+
+    function loadDocumentContent() {
+      currentDocId = document.getElementById('documentSelector').value;
+      google.script.run.withSuccessHandler(function(content) {
+        document.getElementById('docContent').innerText = content;
+      }).getDocumentContent(currentDocId);
+    }
+
+    function editDocument() {
+      const newText = document.getElementById('docContent').innerText;
+      google.script.run.updateDocument(currentDocId, newText);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDocuments);
+  </script>
+</body>
+</html>
